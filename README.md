@@ -61,8 +61,6 @@ Le Random Forest s'appuie surtout sur les descripteurs moléculaires (qed, MolLo
 | `train-rf.py` | Variante d'entraînement XGBoost sans barre de progression, même split pour la comparaison |
 | `mlp.py` | Entraînement d'un MLP scikit-learn (3 couches cachées, early stopping, standardisation des features) |
 | `APP-final.py` | Interface graphique Tkinter de prédiction |
-| `descripteurs.py` | Calcul des descripteurs moléculaires RDKit (requis par l'application) |
-| `fingerprint.py` | Calcul des fingerprints Morgan et de la similarité de Tanimoto (requis par l'application) |
 
 Les modèles entraînés sont sauvegardés avec `joblib`, **avec la liste ordonnée des colonnes de features**, indispensable pour garantir la même structure d'entrée à l'inférence.
 
