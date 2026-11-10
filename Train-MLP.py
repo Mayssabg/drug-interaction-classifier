@@ -67,5 +67,5 @@ print(classification_report(y_val, y_pred, target_names=["non-interaction", "int
 joblib.dump(model, "mlp_ddi_sklearn.joblib")
 joblib.dump(scaler, "scaler_ddi.joblib")
 joblib.dump(FEATURE_COLUMNS, "mlp_ddi_feature_columns.joblib")
-print(f"💾 Colonnes de features sauvegardées : mlp_ddi_feature_columns.joblib ({len(FEATURE_COLUMNS)} colonnes)")
+print(f"Colonnes de features sauvegardées : mlp_ddi_feature_columns.joblib ({len(FEATURE_COLUMNS)} colonnes)")
 print("\nModèle sauvegardé : mlp_ddi_sklearn.joblib")
