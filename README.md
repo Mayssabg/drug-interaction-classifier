@@ -2,8 +2,6 @@
 
 Projet de classification binaire : à partir de deux médicaments (nom DrugBank ou SMILES), prédire s'il existe une **interaction médicamenteuse** ou non. Le projet compare trois modèles (XGBoost, Random Forest, MLP) et fournit une **interface graphique Tkinter** pour tester des combinaisons de médicaments.
 
-> **Avertissement** : projet académique à visée pédagogique. Il ne remplace en aucun cas l'avis d'un médecin ou d'un pharmacien.
-
 ---
 
 ## Aperçu du pipeline
@@ -66,26 +64,17 @@ Les modèles entraînés sont sauvegardés avec `joblib`, **avec la liste ordonn
 
 ## Installation
 
-```bash
-git clone https://github.com/<votre-utilisateur>/<nom-du-repo>.git
-cd <nom-du-repo>
 
-pip install pandas numpy scikit-learn xgboost rdkit joblib tqdm
-```
 
 Tkinter est inclus avec Python (sous Linux : `sudo apt install python3-tk`).
 
 ## Utilisation
 
 ### 1. Entraîner un modèle
-
-Placer le dataset final (colonne cible `label`, 0 = pas d'interaction, 1 = interaction) à la racine du dépôt, puis :
-
 ```bash
 python train-XGboost.py     # XGBoost -> xgb_ddi_model.joblib
 python mlp.py               # MLP     -> mlp_ddi_sklearn.joblib + scaler_ddi.joblib
 ```
-
 ### 2. Lancer l'interface
 
 Fichiers nécessaires à la racine : `xgb_ddi_model.joblib`, `xgb_ddi_feature_columns.joblib`, `drugbank.csv`, `db_drug_interactions1.csv`.
@@ -100,8 +89,6 @@ Dans l'interface :
 - chaque entrée peut être un **nom** ou un **SMILES** (détecté automatiquement) ;
 - en cas de faute de frappe ou de casse différente, l'application **propose les noms ou SMILES les plus proches** de la base ;
 - l'application affiche, pour chaque médicament, la prédiction, la probabilité, et la description de l'interaction lorsqu'elle est connue dans la base.
-
-Exemple : `Aspirine, Paracetamol, Ibuprofene` avec le nouveau médicament `Warfarine`.
 
 ## Données
 
