@@ -7,7 +7,6 @@ from sklearn.metrics import (
     accuracy_score, precision_score, recall_score, f1_score,
     roc_auc_score, confusion_matrix, classification_report
 )
-
 FICHIER_DATASET = "dataset-18000-final.csv"
 df = pd.read_csv(FICHIER_DATASET)
 print(f"Dataset : {df.shape[0]} lignes, {df.shape[1]} colonnes")
@@ -58,9 +57,7 @@ print(importances.sort_values(ascending=False).head(15).round(4))
 joblib.dump(model, "xgb_ddi_model.joblib")
 joblib.dump(FEATURE_COLUMNS, "xgb_ddi_feature_columns.joblib")
 print("Modèle sauvegardé : xgb_ddi_model.joblib")
-print(f"💾 Colonnes de features sauvegardées : xgb_ddi_feature_columns.joblib ({len(FEATURE_COLUMNS)} colonnes)")
-
-# Optionnel : afficher quelques statistiques supplémentaires
-print("\n📊 Statistiques du modèle :")
+print(f"Colonnes de features sauvegardées : xgb_ddi_feature_columns.joblib ({len(FEATURE_COLUMNS)} colonnes)")
+print("Statistiques du modèle :")
 print(f"Nombre d'arbres : {len(model.get_booster().get_dump())}")
 print(f"Classes : {model.classes_}")
