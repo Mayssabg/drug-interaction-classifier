@@ -1,8 +1,3 @@
-"""
-Entraînement d'un MLP pour la classification binaire interaction/non-interaction (DDI).
-Réutilise le dataset déjà construit (descripteurs + tanimoto, +/- fingerprints).
-"""
-
 import pandas as pd
 import numpy as np
 from sklearn.model_selection import train_test_split
@@ -10,21 +5,16 @@ from sklearn.preprocessing import StandardScaler
 from sklearn.neural_network import MLPClassifier
 from sklearn.metrics import accuracy_score, f1_score, classification_report
 import joblib
-# ------------------------------------------------------------------
-# CONFIG — à adapter à tes noms de colonnes réels
-# ------------------------------------------------------------------
-CSV_PATH = "dataset-18000-final.csv"          # ou ton échantillon de 8000 lignes
-TARGET_COL = "label"     # colonne 0/1 à prédire — adapte si le nom diffère
-COLS_TO_DROP = ["Drug 1", "Drug 2", "description", "smiles_rdkit"]  # colonnes non numériques à exclure
-USE_FINGERPRINTS = True        # inclut fp1_*/fp2_* (4096 colonnes, plus lourd en mémoire/calcul)
+
+CSV_PATH = "dataset-18000-final.csv"        
+TARGET_COL = "label"   
+COLS_TO_DROP = ["Drug 1", "Drug 2", "description", "smiles_rdkit"]  
+USE_FINGERPRINTS = True       
 BATCH_SIZE = 64
 EPOCHS = 100
 LR = 1e-3
-PATIENCE = 10                  # early stopping
+PATIENCE = 10                  
 
-# ------------------------------------------------------------------
-# 1. Chargement et préparation
-# ------------------------------------------------------------------
 df = pd.read_csv(CSV_PATH)
 
 cols_to_drop = [c for c in COLS_TO_DROP if c in df.columns]
@@ -46,20 +36,17 @@ scaler = StandardScaler()
 X_train = scaler.fit_transform(X_train)
 X_val = scaler.transform(X_val)
 
-# ------------------------------------------------------------------
-# 2. Modèle — MLP à 3 couches cachées (256, 128, 64), équivalent à la version PyTorch
-# ------------------------------------------------------------------
 model = MLPClassifier(
     hidden_layer_sizes=(256, 128, 64),
     activation="relu",
     solver="adam",
-    alpha=1e-4,              # régularisation L2 (rôle proche du dropout)
+    alpha=1e-4,              
     batch_size=64,
     learning_rate_init=1e-3,
     max_iter=200,
-    early_stopping=True,     # arrête automatiquement si val_loss stagne
-    validation_fraction=0.1, # pris sur le train pour l'early stopping interne
-    n_iter_no_change=10,     # patience équivalente à PATIENCE=10
+    early_stopping=True,    
+    validation_fraction=0.1, 
+    n_iter_no_change=10,     
     random_state=42,
     verbose=True,
 )
@@ -67,9 +54,7 @@ model = MLPClassifier(
 print("Entraînement en cours...")
 model.fit(X_train, y_train)
 
-# ------------------------------------------------------------------
-# 3. Évaluation
-# ------------------------------------------------------------------
+
 y_pred = model.predict(X_val)
 acc = accuracy_score(y_val, y_pred)
 f1 = f1_score(y_val, y_pred)
@@ -79,9 +64,6 @@ print(f"F1-score : {f1:.4f}")
 print("\n=== Rapport détaillé ===")
 print(classification_report(y_val, y_pred, target_names=["non-interaction", "interaction"]))
 
-# ------------------------------------------------------------------
-# 4. Sauvegarde du modèle + scaler pour l'inférence future
-# ------------------------------------------------------------------
 joblib.dump(model, "mlp_ddi_sklearn.joblib")
 joblib.dump(scaler, "scaler_ddi.joblib")
 joblib.dump(FEATURE_COLUMNS, "mlp_ddi_feature_columns.joblib")
