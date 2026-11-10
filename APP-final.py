@@ -1,4 +1,3 @@
-# app_tkinter.py - Interface avec Tkinter (version sans emojis)
 
 import tkinter as tk
 from tkinter import scrolledtext, messagebox, ttk
@@ -18,11 +17,7 @@ class InterfaceDDI:
         self.root = root
         self.root.title("Prédiction d'interactions médicamenteuses")
         self.root.geometry("750x650")
-        
-        # Chargement des ressources
         self.charger_ressources()
-        
-        # Création de l'interface
         self.creer_interface()
     
     def charger_ressources(self):
@@ -31,8 +26,6 @@ class InterfaceDDI:
             self.FEATURE_COLUMNS = joblib.load("xgb_ddi_feature_columns.joblib")
             self.drugbank = pd.read_csv("drugbank.csv")
             self.interactions = pd.read_csv("db_drug_interactions1.csv")
-            
-            # Créer un dictionnaire pour la recherche rapide
             self.dict_noms = {row["name"].lower(): row["name"] for _, row in self.drugbank.iterrows()}
             self.dict_smiles = {row["smiles_rdkit"]: row["name"] for _, row in self.drugbank.iterrows() if pd.notna(row["smiles_rdkit"])}
             self.liste_noms = list(self.dict_noms.keys())
@@ -50,8 +43,6 @@ class InterfaceDDI:
         input_clean = input_text.strip()
         drug_name = None
         smiles = None
-        
-        # Vérifier si c'est un SMILES
         is_smiles = any(c in input_clean for c in ['[', ']', '=', '#', '(', ')', '@', '\\', '/']) and len(input_clean) > 10
         
         if is_smiles:
@@ -118,7 +109,6 @@ class InterfaceDDI:
     
     def predire(self):
         """Fonction appelée quand on clique sur le bouton"""
-        # Récupérer les entrées
         medicaments_str = self.entry_medicaments.get("1.0", tk.END).strip()
         nouveau_med = self.entry_nouveau.get().strip()
         
@@ -127,30 +117,21 @@ class InterfaceDDI:
             return
         
         medicaments_pris = [m.strip() for m in medicaments_str.split(",") if m.strip()]
-        
-        # Effacer les résultats précédents
         self.text_resultats.delete("1.0", tk.END)
         
         try:
-            # Récupérer les infos du nouveau médicament
-            nom_nouveau, smiles_nouveau = self.get_drug_info(nouveau_med)
-            
-            # En-tête des résultats
+            nom_nouveau, smiles_nouveau = self.get_drug_info(nouveau_med)  
             self.text_resultats.insert("1.0", "=" * 70 + "\n")
             self.text_resultats.insert("end", "RESULTATS DES PREDICTIONS\n")
             self.text_resultats.insert("end", "=" * 70 + "\n\n")
-            
-            # Nouveau médicament (affichage épuré)
             self.text_resultats.insert("end", f"NOUVEAU MEDICAMENT: {nom_nouveau}\n")
             self.text_resultats.insert("end", f"SMILES: {smiles_nouveau[:80]}...\n\n")
             self.text_resultats.insert("end", "-" * 70 + "\n\n")
             
             resultats = []
-            
             for med in medicaments_pris:
                 try:
                     nom_med, smiles_med = self.get_drug_info(med)
-                    
                     X = self.construire_features(smiles_med, smiles_nouveau)
                     proba = self.model.predict_proba(X)[0][1]
                     
@@ -160,8 +141,6 @@ class InterfaceDDI:
                         prediction = "PAS D'INTERACTION"
                     
                     desc = self.chercher_description(nom_med, nom_nouveau)
-                    
-                    # Formater le résultat (version sans emojis)
                     resultat = f"MEDICAMENT: {nom_med}\n"
                     resultat += f"SMILES: {smiles_med[:80]}...\n"
                     resultat += f"PREDICTION: {prediction} (probabilite: {proba:.2%})\n"
@@ -174,13 +153,10 @@ class InterfaceDDI:
                     
                 except Exception as e:
                     resultats.append(f"ERREUR avec '{med}': {str(e)}\n\n")
-            
-            # Afficher les résultats
             for r in resultats:
                 self.text_resultats.insert("end", r)
                 self.text_resultats.insert("end", "-" * 70 + "\n\n")
             
-            # Résumé
             nb_interactions = sum(1 for r in resultats if "INTERACTION DETECTEE" in r)
             self.text_resultats.insert("end", "=" * 70 + "\n")
             if nb_interactions > 0:
@@ -194,54 +170,38 @@ class InterfaceDDI:
             self.text_resultats.insert("1.0", f"ERREUR: {str(e)}")
     
     def creer_interface(self):
-        # Titre
         titre = tk.Label(self.root, text="Prediction d'interactions medicamenteuses", 
                          font=("Arial", 16, "bold"))
         titre.pack(pady=10)
-        
-        # Cadre pour les entrées
         cadre_input = tk.Frame(self.root)
         cadre_input.pack(pady=10, padx=20, fill="x")
-        
-        # Type d'entrée
         cadre_type = tk.Frame(cadre_input)
         cadre_type.pack(fill="x", pady=5)
         
         label_type = tk.Label(cadre_type, text="Format d'entree:", font=("Arial", 10))
         label_type.pack(side="left", padx=(0, 10))
-        
         self.input_type_var = tk.StringVar(value="Auto (detection automatique)")
         type_options = ["Auto (detection automatique)", "Nom", "SMILES"]
         type_menu = ttk.Combobox(cadre_type, textvariable=self.input_type_var, 
                                  values=type_options, width=30)
         type_menu.pack(side="left")
-        
-        # Info
         label_info = tk.Label(cadre_type, text="(SMILES detecte automatiquement)", 
                               font=("Arial", 8), fg="gray")
         label_info.pack(side="left", padx=(10, 0))
-        
-        # Médicaments déjà pris
         label_medicaments = tk.Label(cadre_input, text="Medicaments deja pris (separes par des virgules):")
         label_medicaments.pack(anchor="w", pady=(10,0))
         
         self.entry_medicaments = scrolledtext.ScrolledText(cadre_input, height=3, font=("Arial", 10))
         self.entry_medicaments.pack(fill="x", pady=5)
-        
-        # Nouveau médicament
         label_nouveau = tk.Label(cadre_input, text="Nouveau medicament (nom ou SMILES):")
         label_nouveau.pack(anchor="w", pady=(10,0))
         
         self.entry_nouveau = tk.Entry(cadre_input, font=("Arial", 10))
         self.entry_nouveau.pack(fill="x", pady=5)
-        
-        # Bouton prédire
         bouton_predire = tk.Button(self.root, text="Predire les interactions", 
                                    command=self.predire, bg="#22439e", fg="white",
                                    font=("Arial", 12, "bold"), height=2)
         bouton_predire.pack(pady=10, padx=20, fill="x")
-        
-        # Cadre pour les résultats
         cadre_resultats = tk.Frame(self.root)
         cadre_resultats.pack(pady=10, padx=20, fill="both", expand=True)
         
@@ -251,8 +211,6 @@ class InterfaceDDI:
         self.text_resultats = scrolledtext.ScrolledText(cadre_resultats, height=15, 
                                                         font=("Courier", 10), bg="#f0f0f0")
         self.text_resultats.pack(fill="both", expand=True)
-        
-        # Exemple en bas
         cadre_exemple = tk.Frame(self.root)
         cadre_exemple.pack(pady=5)
         label_exemple = tk.Label(cadre_exemple, 
